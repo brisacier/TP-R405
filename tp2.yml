@@ -1,0 +1,20 @@
+---
+- name: apt update & apt upgrade
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: Run the equivalent of "apt-get update" as a separate step
+      ansible.builtin.apt:
+       update_cache: yes
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+- name: install apache 2 server on all web servers
+  hosts: web
+  remote_user: root
+  tasks:
+  - name: install apache2 on the server
+    ansible.builtin.apt:
+      name: "apache2"
+      state: latest

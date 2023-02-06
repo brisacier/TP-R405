@@ -1,0 +1,19 @@
+Fichier généré sur l'hôte {{ inventory_hostname }}. Sur cette
+hôte, la variable testvar2 vaut {{ vartest2 }}.
+Liste des hôtes de l'inventaire:
+{% for host in groups['all'] %}
+- {{ hostvars[host]['inventory_hostname'] }}
+{% endfor %}
+
+Liste des variables testvar2 pour tous les hôtes:
+{% for host in groups['all'] %}
+- {{host}} : {{ hostvars[host]['vartest2'] }}
+{% endfor %}
+
+Liste des groupes disponibles :
+{% for group in (groups | dict2items) %}
+- {{ group['key'] }} :
+{% for element in group['value'] %}
+    - {{ element }}
+{% endfor %}
+{% endfor %}

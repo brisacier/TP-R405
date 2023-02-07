@@ -1,0 +1,42 @@
+---
+- name: configure dns servers globally
+  hosts: dns
+  remote_user: root
+  tasks:
+    - name: Install bind9 (or update to latest version)
+      ansible.builtin.package:
+        name: bind9
+        state: latest
+    - name: get timestamp on 1 server for serial number
+      ansible.builtin.shell:
+        cmd: "date +%s"
+      run_once: True
+      register: timestamp
+    - name: generate zone file from jinja2 template and copy it on server
+      ansible.builtin.template:
+        src: templates/labzone.j2
+        dest: /etc/bind/db.{{ domaine_lab }}
+        owner: bind
+        group: bind
+        mode: '0644'
+    - name: edit named.conf.local file to add zone file
+      ansible.builtin.blockinfile: 
+        path: /etc/bind/named.conf.local
+        backup: true
+        block : |
+          zone "{{ domaine_lab }}" {
+            type master;
+            file "/etc/bind/db.{{ domaine_lab }}";
+          };
+    - name: reload bind service
+      ansible.builtin.service:
+        name: bind9
+        state: restarted
+
+- name: edit DNS parameters to match DNS VM servers
+  hosts: web:lb
+  tasks:
+  - name: Include task set_dns in play
+    ansible.builtin.import_tasks:
+      file: tasks/set_dns.yml
+

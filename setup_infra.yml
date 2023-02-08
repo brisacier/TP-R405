@@ -1,5 +1,5 @@
 ---
-- name: configure dns servers globally
+- name: setup DNS servers 
   hosts: dns
   remote_user: root
   tasks:
@@ -40,3 +40,55 @@
     ansible.builtin.import_tasks:
       file: tasks/set_dns.yml
 
+- name: setup web load balancer
+  hosts: lb
+  tasks:
+  - name: install apache2 on lb machine
+    ansible.builtin.package:
+      name: apache2
+      state: latest
+  - name: enable apache2 modules
+    community.general.apache2_module:
+      state: present
+      name: "{{ item }}"
+    loop:
+      - proxy_http
+      - proxy_http2
+      - proxy_balancer
+      - lbmethod_byrequests
+  - name: generate apache2 config from jinja2 template and copy it on server
+    ansible.builtin.template:
+      src: templates/lb-apache-conf.j2
+      dest: /etc/apache2/sites-available/000-default.conf
+      owner: www-data
+      group: www-data
+      mode: '0644'
+    register: template_state
+  - name: reload apache2 service
+    ansible.builtin.service:
+      name: apache2
+      state: restarted
+    when: template_state.changed
+
+
+- name: setup web servers
+  hosts: web
+  tasks:
+  - name: install apache2 and php
+    ansible.builtin.package:
+      name: 
+        - apache2
+        - php
+      state: latest
+  - name: remove default index file
+    ansible.builtin.file:
+      path: /var/www/html/index.html
+      state: absent
+
+  - name: copy index.php from project to web servers
+    ansible.builtin.copy:
+      src: files/index.php
+      dest: /var/www/html/index.php
+      owner: www-data
+      group: www-data
+      mode: '0644'

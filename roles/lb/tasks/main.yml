@@ -1,0 +1,25 @@
+---
+- name: install apache2 on lb machine
+  ansible.builtin.package:
+      name: apache2
+      state: latest
+
+- name: enable apache2 modules
+  community.general.apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - proxy_http
+    - proxy_http2
+    - proxy_balancer
+    - lbmethod_byrequests
+
+- name: generate apache2 config from jinja2 template and copy it on server
+  ansible.builtin.template:
+    src: templates/lb-apache-conf.j2
+    dest: /etc/apache2/sites-available/000-default.conf
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  notify: reload apache2 service
+

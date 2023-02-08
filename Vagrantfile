@@ -4,7 +4,7 @@
 # comment on branch1
 $subnet = "192.168.57"
 $num_dns = 2 #max 9
-$num_web = 3 #max 9
+$num_web = 4 #max 9
 
 if Vagrant.has_plugin?("vagrant-proxyconf")
   $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"

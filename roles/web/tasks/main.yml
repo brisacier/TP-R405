@@ -1,0 +1,20 @@
+---
+- name: install apache2 and php
+  ansible.builtin.package:
+    name: 
+      - apache2
+      - php
+    state: latest
+    
+- name: remove default index file
+  ansible.builtin.file:
+    path: /var/www/html/index.html
+    state: absent
+
+- name: copy index.php from project to web servers
+  ansible.builtin.copy:
+    src: files/index.php
+    dest: /var/www/html/index.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
